@@ -25,11 +25,15 @@ def connect_to_jira(url, username, token):
         jira_client = JIRA(server=url, basic_auth=(username, token))
         print("Successfully connected to Jira.")
 
+        #Input story id
+        ticket_id=input("Please enter something: ")
+        print("You entered:", ticket_id)
+
         #Read description on story       
-        passmessage=jira_client.issue('HAC-1').fields.description
+        passmessage=jira_client.issue(ticket_id).fields.description
         
         #Passing story description to OpenAI
-        message_text = [{"role":"user","content":"Generate Acceptance Criteria for :"+passmessage}]
+        message_text = [{"role":"user","content":"Generate Acceptance Criteria in 100 words for :"+passmessage}]
 
         #OpenAI connection
         completion = client.chat.completions.create(
@@ -48,12 +52,12 @@ def connect_to_jira(url, username, token):
         
         #Updating Output from OpenAI to JIRA
         customfield_id='customfield_10033'
-        fieldstring =jira_client.issue('HAC-1').fields.customfield_10033
+        fieldstring =jira_client.issue(ticket_id).fields.customfield_10033
         
         if fieldstring is None or len(fieldstring) == 0: 
-            jira_client.issue('HAC-1').update(fields={customfield_id:openai_msg})
+            jira_client.issue(ticket_id).update(fields={customfield_id:openai_msg})
         else :
-            jira_client.issue('HAC-1').update(fields={customfield_id:fieldstring+ ' ' + openai_msg})    
+            jira_client.issue(ticket_id).update(fields={customfield_id:fieldstring+ ' ' + openai_msg})    
             
     
         return jira_client
@@ -66,7 +70,6 @@ def connect_to_jira(url, username, token):
 
  # Establish the connection
 jira_connection = connect_to_jira(jira_url, jira_user, jira_token) 
-
 
 
 
